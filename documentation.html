@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word and Character Counter - Documentation</title>
+  <link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Word & Character Counter - Chrome Extension Documentation</h1>
+
+    <h2>Overview</h2>
+    <p>
+      The <strong>Word & Character Counter</strong> is a simple and lightweight Chrome extension that counts the number of words and characters on a webpage or in a selected section. It also provides a frequency analysis of the top 5 most frequent words in the content.
+    </p>
+
+    <h2>Features</h2>
+    <ul>
+      <li>Counts total words and characters on the entire page.</li>
+      <li>Counts words and characters for selected text only.</li>
+      <li>Displays the top 5 most frequent words along with their usage count.</li>
+      <li>Formatted word and character counts with commas for readability.</li>
+    </ul>
+
+    <h2>Usage</h2>
+    <ol>
+      <li><strong>Install the Extension:</strong> Load the unpacked extension in Chrome from the Extensions page (<code>chrome://extensions/</code>).</li>
+      <li><strong>Counting Entire Page:</strong> Open the extension from the toolbar. It will automatically display the word count, character count, and top 5 frequent words for the entire webpage.</li>
+      <li><strong>Counting Selected Text:</strong> Select any portion of text on the page, and the extension will dynamically update to show the counts for the selected section only.</li>
+    </ol>
+
+    <h2>Technical Details</h2>
+    <h3>Manifest File</h3>
+    <p>The <code>manifest.json</code> file includes metadata about the extension, such as permissions and script files used.</p>
+
+    <pre>
+{
+  "manifest_version": 3,
+  "name": "Word and Character Counter",
+  "version": "1.0",
+  "description": "Counts words and characters on the whole page or in a selected section.",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
+    </pre>
+
+    <h3>Popup HTML</h3>
+    <p>The <code>popup.html</code> file defines the structure of the popup window that appears when the extension is opened.</p>
+
+    <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;link rel="stylesheet" href="popup.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Word & Character Counter&lt;/h1&gt;
+    &lt;p id="result"&gt;Calculating...&lt;/p&gt;
+    &lt;script src="popup.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+    </pre>
+
+    <h3>JavaScript</h3>
+    <p>The main logic resides in <code>popup.js</code>, where we count the words, characters, and calculate word frequency. It uses the <code>detectAndCount</code> function to analyze selected or full text on the page.</p>
+
+    <pre>
+function detectAndCount() {
+  function countText(text) {
+    const wordsArray = text.split(/\s+/).filter(word =&gt; word.length &gt; 0);
+    const wordCount = wordsArray.length;
+    const charCount = text.replace(/\s+/g, '').length;
+    const topWords = getTopWords(wordsArray);
+    return { wordCount, charCount, topWords };
+  }
+
+  function getTopWords(wordsArray) {
+    const wordFrequency = {};
+    wordsArray.forEach(word =&gt; {
+      const cleanedWord = word.toLowerCase().replace(/[^\w]/g, '');
+      wordFrequency[cleanedWord] = (wordFrequency[cleanedWord] || 0) + 1;
+    });
+
+    return Object.keys(wordFrequency)
+      .map(word =&gt; ({ word, count: wordFrequency[word] }))
+      .sort((a, b) =&gt; b.count - a.count)
+      .slice(0, 5);
+  }
+
+  const selectedText = window.getSelection().toString();
+  const text = selectedText.trim() ? selectedText : document.body.innerText;
+  return countText(text);
+}
+    </pre>
+
+    <h2>Icons</h2>
+    <p>The extension uses three icons of sizes 16x16, 48x48, and 128x128 for different purposes, like toolbar icon and Chrome Web Store display.</p>
+
+    <h2>License</h2>
+    <p>This extension is licensed under the MIT License. Feel free to use, modify, and distribute it under the same license.</p>
+
+  </div>
+</body>
+</html>
